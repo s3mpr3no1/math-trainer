@@ -207,6 +207,10 @@ class MyPanel(wx.Panel):
         self.answer_input = wx.TextCtrl(self, value="", size = (21*parent.size[0]/32,
                                     parent.size[1]/4), style=wx.TE_RIGHT)
         self.answer_input.SetFont(self.font)
+        """ Need to decide whether to use the ENTER button as a trigger
+        or the changing of text. Enter would allow for the tracking of time and
+        right/wrong but text-change would allow for faster training. Gonna start
+        with changing of text. Making a commit here """
         self.answer_window_sizer.Add(self.answer_input, proportion=1,
                                 flag = wx.ALL | wx.CENTER | wx.EXPAND, border=0)
 
