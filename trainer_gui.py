@@ -44,6 +44,8 @@ class MyPanel(wx.Panel):
         self.div_top = 1
         self.div_bottom = 1
 
+        self.answer_given = 0
+        self.actual_answer = 'foo'
 
         self.top_bottom_sizer = wx.BoxSizer(wx.VERTICAL)
 
@@ -211,6 +213,7 @@ class MyPanel(wx.Panel):
         or the changing of text. Enter would allow for the tracking of time and
         right/wrong but text-change would allow for faster training. Gonna start
         with changing of text. Making a commit here """
+        self.answer_input.Bind(wx.EVT_TEXT, self.answerTextChange)
         self.answer_window_sizer.Add(self.answer_input, proportion=1,
                                 flag = wx.ALL | wx.CENTER | wx.EXPAND, border=0)
 
@@ -226,6 +229,7 @@ class MyPanel(wx.Panel):
         self.top_number = random.randrange(10**(self.add_top-1), 10**(self.add_top))
         self.bottom_number = random.randrange(10**(self.add_bottom-1), 10**(self.add_bottom))
         self.question_text.SetLabel(str(self.top_number) + "\n" + str(self.bottom_number))
+        self.actual_answer = self.top_number + self.bottom_number
 
     def subtraction(self, event): #ensures bottom number is smaller
         self.mode = 2
@@ -233,6 +237,7 @@ class MyPanel(wx.Panel):
         self.top_number = random.randrange(10**(self.sub_top-1), 10**(self.sub_top))
         self.bottom_number = random.randrange(10**(self.sub_bottom-1), min([self.top_number, 10**(self.sub_bottom)]))
         self.question_text.SetLabel(str(self.top_number) + "\n" + str(self.bottom_number))
+        self.actual_answer = self.top_number - self.bottom_number
 
     def multiplication(self, event):
         self.mode = 3
@@ -240,13 +245,15 @@ class MyPanel(wx.Panel):
         self.top_number = random.randrange(10**(self.mul_top-1), 10**(self.mul_top))
         self.bottom_number = random.randrange(10**(self.mul_bottom-1), 10**(self.mul_bottom))
         self.question_text.SetLabel(str(self.top_number) + "\n" + str(self.bottom_number))
+        self.actual_answer = self.top_number * self.bottom_number
 
-    def division(self, event): #no control currently - but maybe add divisor selection
+    def division(self, event): #TODO: no control currently - but maybe add divisor selection
         self.mode = 4
         self.sign_text.SetLabel("/")
         self.top_number = random.randrange(10**(self.div_top-1), 10**(self.div_top))
         self.bottom_number = random.randrange(10**(self.div_bottom-1), 10**(self.div_bottom))
         self.question_text.SetLabel(str(self.top_number) + "\n" + str(self.bottom_number))
+        #TODO: Need to work on this - gotta truncate the right way
 
     def addTopUp(self, event):
         self.add_top += 1
@@ -327,6 +334,20 @@ class MyPanel(wx.Panel):
         if self.div_bottom < 1:
             self.div_bottom = 1
         self.div_bottom_text.SetLabel(str(self.div_bottom))
+
+    def answerTextChange(self, event):
+        self.answer_given = int(self.answer_input.GetLineText(0))
+        if self.answer_given == self.actual_answer:
+            #self.answer_input.SetText("")
+            #TODO: Clear the textctrl - maybe run 10 iterations of emulatekeypress?
+            if self.mode == 1:
+                self.addition(wx.EVT_BUTTON)
+            elif self.mode == 2:
+                self.subtraction(wx.EVT_BUTTON)
+            elif self.mode == 3:
+                self.multiplication(wx.EVT_BUTTON)
+            else:
+                self.division(wx.EVT_BUTTON)
 
 class MainFrame(wx.Frame):
     size = (1024,512)
