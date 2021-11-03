@@ -338,8 +338,8 @@ class MyPanel(wx.Panel):
     def answerTextChange(self, event):
         self.answer_given = int(self.answer_input.GetLineText(0))
         if self.answer_given == self.actual_answer:
-            #self.answer_input.SetText("")
-            #TODO: Clear the textctrl - maybe run 10 iterations of emulatekeypress?
+            time.sleep(0.3)
+            self.answer_input.Clear()
             if self.mode == 1:
                 self.addition(wx.EVT_BUTTON)
             elif self.mode == 2:
