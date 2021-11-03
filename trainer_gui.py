@@ -336,8 +336,15 @@ class MyPanel(wx.Panel):
         self.div_bottom_text.SetLabel(str(self.div_bottom))
 
     def answerTextChange(self, event):
-        self.answer_given = int(self.answer_input.GetLineText(0))
-        if self.answer_given == self.actual_answer:
+        self.answer_given = self.answer_input.GetLineText(0)
+        if len(self.answer_given) == 0:
+            return
+        if len(self.answer_given) >= 1:
+            if not self.answer_given[-1].isdigit():
+                temp = self.answer_given[:-1]
+                self.answer_input.Clear()
+                self.answer_input.write(temp)
+        if int(self.answer_given) == self.actual_answer: #or == ""?
             time.sleep(0.3)
             self.answer_input.Clear()
             if self.mode == 1:
