@@ -1,4 +1,6 @@
 import wx
+import random
+import time
 
 class MyPanel(wx.Panel):
 
@@ -178,7 +180,7 @@ class MyPanel(wx.Panel):
         self.answer_window_sizer = wx.BoxSizer(wx.VERTICAL)
 
         self.sign_and_question_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.test = "555\n111"
+        self.test = "---\n---"
         # question_box = wx.StaticBox(self, size=(21*parent.size[0]/32, 3*parent.size[1]/4))
         self.sign_text = wx.StaticText(self,-1,"+",
                                         size=(10*parent.size[0]/32,
@@ -211,22 +213,36 @@ class MyPanel(wx.Panel):
         self.main_sizer.Add(self.answer_window_sizer)
         self.SetSizer(self.main_sizer)
 
+        #Maybe have the mode buttons give you a single question and then the
+         # enter button could give you a new problem by re-calling it
 
     def addition(self, event):
         self.mode = 1
         self.sign_text.SetLabel("+")
+        self.top_number = random.randrange(10**(self.add_top-1), 10**(self.add_top))
+        self.bottom_number = random.randrange(10**(self.add_bottom-1), 10**(self.add_bottom))
+        self.question_text.SetLabel(str(self.top_number) + "\n" + str(self.bottom_number))
 
-    def subtraction(self, event):
+    def subtraction(self, event): #ensures bottom number is smaller
         self.mode = 2
         self.sign_text.SetLabel("-")
+        self.top_number = random.randrange(10**(self.sub_top-1), 10**(self.sub_top))
+        self.bottom_number = random.randrange(10**(self.sub_bottom-1), min([self.top_number, 10**(self.sub_bottom)]))
+        self.question_text.SetLabel(str(self.top_number) + "\n" + str(self.bottom_number))
 
     def multiplication(self, event):
         self.mode = 3
         self.sign_text.SetLabel("*")
+        self.top_number = random.randrange(10**(self.mul_top-1), 10**(self.mul_top))
+        self.bottom_number = random.randrange(10**(self.mul_bottom-1), 10**(self.mul_bottom))
+        self.question_text.SetLabel(str(self.top_number) + "\n" + str(self.bottom_number))
 
-    def division(self, event):
+    def division(self, event): #no control currently - but maybe add divisor selection
         self.mode = 4
         self.sign_text.SetLabel("/")
+        self.top_number = random.randrange(10**(self.div_top-1), 10**(self.div_top))
+        self.bottom_number = random.randrange(10**(self.div_bottom-1), 10**(self.div_bottom))
+        self.question_text.SetLabel(str(self.top_number) + "\n" + str(self.bottom_number))
 
     def addTopUp(self, event):
         self.add_top += 1
