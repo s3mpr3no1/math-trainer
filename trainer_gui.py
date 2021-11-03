@@ -1,6 +1,7 @@
 import wx
 import random
 import time
+import threading
 
 class MyPanel(wx.Panel):
 
@@ -19,6 +20,13 @@ class MyPanel(wx.Panel):
         self.div_button.Bind(wx.EVT_BUTTON, self.division)
         self.main_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.mode_sizer = wx.BoxSizer(wx.VERTICAL)
+
+        self.mode_font = self.add_button.GetFont()
+        self.mode_font.PointSize+=15
+        self.add_button.SetFont(self.mode_font)
+        self.sub_button.SetFont(self.mode_font)
+        self.mul_button.SetFont(self.mode_font)
+        self.div_button.SetFont(self.mode_font)
 
         self.mode_sizer.Add(self.add_button, proportion=1,
                         flag = wx.ALL | wx.CENTER | wx.EXPAND,
@@ -206,7 +214,12 @@ class MyPanel(wx.Panel):
                                 flag = wx.ALL | wx.CENTER | wx.EXPAND, border=0)
         self.answer_window_sizer.Add(self.sign_and_question_sizer)
 
-        self.answer_input = wx.TextCtrl(self, value="", size = (21*parent.size[0]/32,
+        self.answer_bar_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.status = wx.StaticText(self,-1,"",size=(10*parent.size[0]/32,
+                                    parent.size[1]/4), style=wx.ALIGN_CENTER )
+        self.status.SetFont(self.font)
+
+        self.answer_input = wx.TextCtrl(self, value="", size = (11*parent.size[0]/32,
                                     parent.size[1]/4), style=wx.TE_RIGHT)
         self.answer_input.SetFont(self.font)
         """ Need to decide whether to use the ENTER button as a trigger
@@ -214,9 +227,11 @@ class MyPanel(wx.Panel):
         right/wrong but text-change would allow for faster training. Gonna start
         with changing of text. Making a commit here """
         self.answer_input.Bind(wx.EVT_TEXT, self.answerTextChange)
-        self.answer_window_sizer.Add(self.answer_input, proportion=1,
+        self.answer_bar_sizer.Add(self.status, proportion=1,
                                 flag = wx.ALL | wx.CENTER | wx.EXPAND, border=0)
-
+        self.answer_bar_sizer.Add(self.answer_input, proportion=1,
+                                flag = wx.ALL | wx.CENTER | wx.EXPAND, border=0)
+        self.answer_window_sizer.Add(self.answer_bar_sizer)
         self.main_sizer.Add(self.answer_window_sizer)
         self.SetSizer(self.main_sizer)
 
@@ -248,6 +263,7 @@ class MyPanel(wx.Panel):
         self.actual_answer = str(self.top_number * self.bottom_number)
 
     def division(self, event): #TODO: no control currently - but maybe add divisor selection
+        # You could maybe do a slider from 0 - 1000 to pick sizes instead of digit counts
         self.mode = 4
         self.sign_text.SetLabel("/")
         self.top_number = random.randrange(10**(self.div_top-1), 10**(self.div_top))
@@ -256,10 +272,8 @@ class MyPanel(wx.Panel):
         ans = round(self.top_number/self.bottom_number, 2)
         if int(ans) - ans == 0:
             self.actual_answer = str(int(ans))
-            #print("Integer: ", type(self.actual_answer), " ", self.actual_answer)
         else:
             self.actual_answer = str(round(self.top_number/self.bottom_number, 2))
-            #print("Float: ", type(self.actual_answer), " ", self.actual_answer)
 
     def addTopUp(self, event):
         self.add_top += 1
@@ -353,8 +367,17 @@ class MyPanel(wx.Panel):
                 self.answer_input.Clear()
                 self.answer_input.write(temp)
         if self.answer_given == self.actual_answer:
-            time.sleep(0.3)
             self.answer_input.Clear()
+            self.status.SetLabel("Correct!")
+            x = threading.Thread(target=self.correctText, daemon=True)
+            x.start()
+
+            #TODO: can't get the sign_text to work - maybe change the txtctrl color?
+            # sw = wx.StopWatch()
+            # time.sleep(1)
+            # self.question_text.SetBackgroundColour(wx.Colour(255, 255, 255))
+            # self.sign_text.SetBackgroundColour(wx.Colour(255,255,255))
+            #self.answer_input.SetBackgroundColour(wx.Colour(255, 255, 255))
             if self.mode == 1:
                 self.addition(wx.EVT_BUTTON)
             elif self.mode == 2:
@@ -364,6 +387,10 @@ class MyPanel(wx.Panel):
             else:
                 self.division(wx.EVT_BUTTON)
 
+    def correctText(self):
+        time.sleep(1)
+        self.status.SetLabel("")
+    
 class MainFrame(wx.Frame):
     size = (1024,512)
 
