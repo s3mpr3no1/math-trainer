@@ -229,7 +229,7 @@ class MyPanel(wx.Panel):
         self.top_number = random.randrange(10**(self.add_top-1), 10**(self.add_top))
         self.bottom_number = random.randrange(10**(self.add_bottom-1), 10**(self.add_bottom))
         self.question_text.SetLabel(str(self.top_number) + "\n" + str(self.bottom_number))
-        self.actual_answer = self.top_number + self.bottom_number
+        self.actual_answer = str(self.top_number + self.bottom_number)
 
     def subtraction(self, event): #ensures bottom number is smaller
         self.mode = 2
@@ -237,7 +237,7 @@ class MyPanel(wx.Panel):
         self.top_number = random.randrange(10**(self.sub_top-1), 10**(self.sub_top))
         self.bottom_number = random.randrange(10**(self.sub_bottom-1), min([self.top_number, 10**(self.sub_bottom)]))
         self.question_text.SetLabel(str(self.top_number) + "\n" + str(self.bottom_number))
-        self.actual_answer = self.top_number - self.bottom_number
+        self.actual_answer = str(self.top_number - self.bottom_number)
 
     def multiplication(self, event):
         self.mode = 3
@@ -245,7 +245,7 @@ class MyPanel(wx.Panel):
         self.top_number = random.randrange(10**(self.mul_top-1), 10**(self.mul_top))
         self.bottom_number = random.randrange(10**(self.mul_bottom-1), 10**(self.mul_bottom))
         self.question_text.SetLabel(str(self.top_number) + "\n" + str(self.bottom_number))
-        self.actual_answer = self.top_number * self.bottom_number
+        self.actual_answer = str(self.top_number * self.bottom_number)
 
     def division(self, event): #TODO: no control currently - but maybe add divisor selection
         self.mode = 4
@@ -253,7 +253,13 @@ class MyPanel(wx.Panel):
         self.top_number = random.randrange(10**(self.div_top-1), 10**(self.div_top))
         self.bottom_number = random.randrange(10**(self.div_bottom-1), 10**(self.div_bottom))
         self.question_text.SetLabel(str(self.top_number) + "\n" + str(self.bottom_number))
-        #TODO: Need to work on this - gotta truncate the right way
+        ans = round(self.top_number/self.bottom_number, 2)
+        if int(ans) - ans == 0:
+            self.actual_answer = str(int(ans))
+            #print("Integer: ", type(self.actual_answer), " ", self.actual_answer)
+        else:
+            self.actual_answer = str(round(self.top_number/self.bottom_number, 2))
+            #print("Float: ", type(self.actual_answer), " ", self.actual_answer)
 
     def addTopUp(self, event):
         self.add_top += 1
@@ -340,11 +346,13 @@ class MyPanel(wx.Panel):
         if len(self.answer_given) == 0:
             return
         if len(self.answer_given) >= 1:
-            if not self.answer_given[-1].isdigit():
+            if self.answer_given[-1]==".":
+                return
+            if (not self.answer_given[-1].isdigit()):
                 temp = self.answer_given[:-1]
                 self.answer_input.Clear()
                 self.answer_input.write(temp)
-        if int(self.answer_given) == self.actual_answer: #or == ""?
+        if self.answer_given == self.actual_answer:
             time.sleep(0.3)
             self.answer_input.Clear()
             if self.mode == 1:
