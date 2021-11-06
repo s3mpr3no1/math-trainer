@@ -371,13 +371,6 @@ class MyPanel(wx.Panel):
             self.status.SetLabel("Correct!")
             x = threading.Thread(target=self.correctText, daemon=True)
             x.start()
-
-            #TODO: can't get the sign_text to work - maybe change the txtctrl color?
-            # sw = wx.StopWatch()
-            # time.sleep(1)
-            # self.question_text.SetBackgroundColour(wx.Colour(255, 255, 255))
-            # self.sign_text.SetBackgroundColour(wx.Colour(255,255,255))
-            #self.answer_input.SetBackgroundColour(wx.Colour(255, 255, 255))
             if self.mode == 1:
                 self.addition(wx.EVT_BUTTON)
             elif self.mode == 2:
@@ -388,9 +381,9 @@ class MyPanel(wx.Panel):
                 self.division(wx.EVT_BUTTON)
 
     def correctText(self):
-        time.sleep(1)
+        time.sleep(0.5)
         self.status.SetLabel("")
-    
+
 class MainFrame(wx.Frame):
     size = (1024,512)
 
