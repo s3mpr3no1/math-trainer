@@ -55,6 +55,12 @@ class MyPanel(wx.Panel):
         self.answer_given = 0
         self.actual_answer = 'foo'
 
+        self.start_time = 0
+        self.finish_time = 0
+        self.time_elapsed = 0
+
+        self.session_data = {"Date": time.asctime(time.localtime(time.time())), "Questions": []}
+
         self.top_bottom_sizer = wx.BoxSizer(wx.VERTICAL)
 
         self.top_bottom_size = (parent.size[0]/16, parent.size[1]/8)
@@ -239,6 +245,7 @@ class MyPanel(wx.Panel):
          # enter button could give you a new problem by re-calling it
 
     def addition(self, event):
+        self.start_time = time.perf_counter()
         self.mode = 1
         self.sign_text.SetLabel("+")
         self.top_number = random.randrange(10**(self.add_top-1), 10**(self.add_top))
@@ -247,6 +254,7 @@ class MyPanel(wx.Panel):
         self.actual_answer = str(self.top_number + self.bottom_number)
 
     def subtraction(self, event): #ensures bottom number is smaller
+        self.start_time = time.perf_counter()
         self.mode = 2
         self.sign_text.SetLabel("-")
         self.top_number = random.randrange(10**(self.sub_top-1), 10**(self.sub_top))
@@ -255,6 +263,7 @@ class MyPanel(wx.Panel):
         self.actual_answer = str(self.top_number - self.bottom_number)
 
     def multiplication(self, event):
+        self.start_time = time.perf_counter()
         self.mode = 3
         self.sign_text.SetLabel("*")
         self.top_number = random.randrange(10**(self.mul_top-1), 10**(self.mul_top))
@@ -264,6 +273,7 @@ class MyPanel(wx.Panel):
 
     def division(self, event): #TODO: no control currently - but maybe add divisor selection
         # You could maybe do a slider from 0 - 1000 to pick sizes instead of digit counts
+        self.start_time = time.perf_counter()
         self.mode = 4
         self.sign_text.SetLabel("/")
         self.top_number = random.randrange(10**(self.div_top-1), 10**(self.div_top))
@@ -366,13 +376,20 @@ class MyPanel(wx.Panel):
                 temp = self.answer_given[:-1]
                 self.answer_input.Clear()
                 self.answer_input.write(temp)
-        if self.answer_given == self.actual_answer:
+        if self.answer_given == self.actual_answer: #Correct answer given
+            self.finish_time = time.perf_counter()
+            self.time_elapsed = round(self.finish_time-self.start_time, 2)
+            #print(self.time_elapsed) #TODO: Figure out how best to store session data
+            self.session_data["Questions"].append((self.time_elapsed, self.mode,
+                                                len(str(self.top_number)),
+                                                len(str(self.bottom_number)),
+                                                self.top_number, self.bottom_number))
             self.answer_input.Clear()
             self.status.SetLabel("Correct!")
             x = threading.Thread(target=self.correctText, daemon=True)
             x.start()
             if self.mode == 1:
-                self.addition(wx.EVT_BUTTON)
+                self.addition(wx.EVT_BUTTON) #These functions should start the player timer
             elif self.mode == 2:
                 self.subtraction(wx.EVT_BUTTON)
             elif self.mode == 3:
@@ -384,14 +401,33 @@ class MyPanel(wx.Panel):
         time.sleep(0.5)
         self.status.SetLabel("")
 
+    def exportSessionData(self):
+        with open("history.txt", "a") as f:
+            f.write(self.session_data["Date"])
+            f.write("\n\n")
+            f.write("Time\tMode\tTop\tBottom\tTop\tBottom\n")
+            for question in self.session_data["Questions"]:
+                for element in question:
+                    f.write(str(element))
+                    f.write("\t")
+                f.write("\n")
+
+
+#TODO: You made this code to hopefully write your session data to a file
+#TODO: You need to make this run when the application is closed somehow and then debug it.
+
 class MainFrame(wx.Frame):
     size = (1024,512)
 
     def __init__(self):
         super().__init__(None, title="Math Trainer", size=self.size)
-        panel = MyPanel(self)
+        self.Bind(wx.EVT_CLOSE, self._when_closed)
+        self.panel = MyPanel(self)
         self.Show()
 
+    def _when_closed(self, event):
+        self.panel.exportSessionData()
+        self.Destroy()
 
 if __name__ == "__main__":
     app = wx.App(redirect=False)
